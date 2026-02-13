@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Duel P&B Club · Profit Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: #020817;
+    color: #e2e8f0;
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    min-height: 100vh;
+  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0f172a; }
+  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+  /* ── Header ── */
+  #header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border-bottom: 1px solid #1e293b;
+    padding: 22px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .header-brand { display: flex; flex-direction: column; gap: 3px; }
+  .header-brand .eyebrow {
+    display: flex; align-items: center; gap: 9px;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    letter-spacing: 3px; color: #64748b; text-transform: uppercase;
+  }
+  .pulse-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #22d3ee; box-shadow: 0 0 8px #22d3ee;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.5; } }
+  .header-brand h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  .header-brand h1 span { color: #22d3ee; }
+  .header-brand p { font-size: 13px; color: #64748b; margin-top: 2px; }
+  .kpi-strip { display: flex; gap: 24px; flex-wrap: wrap; }
+  .kpi { text-align: right; }
+  .kpi-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+  .kpi-val { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 700; }
+
+  /* ── Banner ── */
+  #banner {
+    padding: 10px 32px;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 14px; font-weight: 600;
+    border-bottom: 1px solid;
+    transition: background .3s, color .3s;
+  }
+
+  /* ── Layout ── */
+  #layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    min-height: calc(100vh - 130px);
+  }
+  #main { padding: 24px 32px; overflow: auto; }
+  #sidebar {
+    background: #0a0f1a;
+    border-left: 1px solid #1e293b;
+    padding: 24px;
+    overflow: auto;
+  }
+
+  /* ── Tab nav ── */
+  .tab-nav {
+    display: flex; gap: 4px; margin-bottom: 24px;
+    background: #0f172a; border-radius: 10px; padding: 4px;
+    width: fit-content;
+  }
+  .tab-btn {
+    padding: 8px 18px; border-radius: 7px; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    transition: all .15s;
+    background: transparent; color: #64748b;
+  }
+  .tab-btn.active { background: #1e293b; color: #e2e8f0; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* ── Category cards ── */
+  .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .cat-card {
+    background: #0f172a; border-radius: 12px; padding: 20px;
+  }
+  .cat-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .cat-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 2px; }
+  .cat-sub { font-size: 13px; color: #64748b; }
+  .cat-rev { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 700; }
+  .cat-rev-label { font-size: 11px; color: #64748b; text-align: right; }
+
+  /* ── Slider inputs ── */
+  .slider-wrap { margin-bottom: 14px; }
+  .slider-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 4px;
+  }
+  .slider-label { font-size: 13px; font-weight: 600; color: #e2e8f0; font-family: 'DM Mono', monospace; }
+  .slider-right { display: flex; align-items: center; gap: 8px; }
+  .slider-sublabel { font-size: 11px; color: #64748b; }
+  .slider-num {
+    width: 64px; background: #0f172a; border-radius: 6px;
+    color: inherit; padding: 3px 8px; font-size: 13px;
+    font-family: 'DM Mono', monospace; text-align: right; outline: none;
+  }
+  input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 4px;
+    border-radius: 2px; background: #1e293b; cursor: pointer; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px;
+    border-radius: 50%; cursor: pointer;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%; cursor: pointer; border: none;
+  }
+
+  /* ── Revenue table ── */
+  .rev-table-card {
+    background: #0f172a; border-radius: 12px; padding: 20px; border: 1px solid #1e293b;
+  }
+  .section-title {
+    font-size: 14px; font-weight: 600; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+  }
+  .rev-grid {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 0 16px; align-items: center;
+  }
+  .rev-th {
+    font-size: 11px; color: #475569; padding-bottom: 8px;
+    border-bottom: 1px solid #1e293b;
+  }
+  .rev-th:not(:first-child) { text-align: right; }
+  .rev-td { font-size: 13px; color: #94a3b8; padding: 7px 0; border-bottom: 1px solid #0f172a; }
+  .rev-td-name { display: flex; align-items: center; gap: 8px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+  .rev-td-num {
+    font-size: 13px; font-family: 'DM Mono', monospace;
+    padding: 7px 0; border-bottom: 1px solid #0f172a; text-align: right; color: #64748b;
+  }
+  .rev-td-cnt { font-size: 13px; font-family: 'DM Mono', monospace; padding: 7px 0; border-bottom: 1px solid #0f172a; text-align: right; color: #e2e8f0; }
+  .rev-total-label { font-size: 13px; font-weight: 700; color: #e2e8f0; padding: 10px 0 4px; }
+  .rev-total-val { font-size: 14px; font-weight: 700; font-family: 'DM Mono', monospace; padding: 10px 0 4px; text-align: right; }
+
+  /* ── Costs tab ── */
+  .costs-card {
+    background: #0f172a; border-radius: 12px; padding: 24px; border: 1px solid #1e293b;
+  }
+  .costs-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .costs-card p { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+  .cost-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid #1e293b;
+  }
+  .cost-label { font-size: 13px; color: #94a3b8; }
+  .cost-input-wrap { display: flex; align-items: center; gap: 4px; }
+  .cost-dollar { color: #64748b; font-size: 13px; }
+  .cost-num {
+    width: 90px; background: #0f172a; border: 1px solid #1e293b; border-radius: 6px;
+    color: #e2e8f0; padding: 4px 8px; font-size: 13px;
+    font-family: 'DM Mono', monospace; text-align: right; outline: none;
+  }
+  .cost-total-row {
+    display: flex; justify-content: space-between; padding: 12px 0 4px; margin-top: 4px;
+  }
+  .cost-total-label { font-size: 15px; font-weight: 700; }
+  .cost-total-val { font-size: 18px; font-weight: 700; font-family: 'DM Mono', monospace; color: #f472b6; }
+
+  /* ── Ancillary tab ── */
+  .anc-card {
+    background: #0f172a; border-radius: 12px; padding: 24px; border: 1px solid #1e293b;
+  }
+  .anc-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .anc-card p { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+  .anc-grid {
+    display: grid; grid-template-columns: 1fr auto auto; gap: 0 16px; align-items: center;
+  }
+  .anc-th { font-size: 11px; color: #475569; padding-bottom: 8px; border-bottom: 1px solid #1e293b; }
+  .anc-th:not(:first-child) { text-align: right; }
+  .anc-td-label { padding: 10px 0; border-bottom: 1px solid #1e293b; }
+  .anc-td-label span { font-size: 13px; color: #94a3b8; display: block; }
+  .anc-td-label input {
+    width: 100px; margin-top: 4px; background: #020817; border: 1px solid #1e293b;
+    border-radius: 6px; color: #e2e8f0; padding: 4px 8px; font-size: 13px;
+    font-family: 'DM Mono', monospace; outline: none;
+  }
+  .anc-td-rate { padding: 10px 0; border-bottom: 1px solid #1e293b; text-align: right; font-size: 13px; color: #64748b; font-family: 'DM Mono', monospace; }
+  .anc-td-val { padding: 10px 0; border-bottom: 1px solid #1e293b; text-align: right; font-size: 13px; color: #a78bfa; font-family: 'DM Mono', monospace; font-weight: 600; }
+  .anc-total-row {
+    display: flex; justify-content: space-between; padding: 10px 0 4px;
+    font-size: 13px; font-weight: 700; color: #e2e8f0;
+  }
+  .anc-total-val { font-size: 14px; font-weight: 700; font-family: 'DM Mono', monospace; color: #a78bfa; }
+
+  /* ── Sidebar P&L ── */
+  .sidebar-title {
+    font-size: 13px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 2px; color: #64748b; margin-bottom: 16px;
+  }
+  .pl-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 24px; }
+  .pl-row {
+    padding: 8px 12px; border-radius: 8px; position: relative; overflow: hidden;
+    transition: background .2s;
+  }
+  .pl-row.bold { background: #1e293b; }
+  .pl-bar {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    border-radius: 8px; pointer-events: none;
+  }
+  .pl-inner { position: relative; display: flex; justify-content: space-between; align-items: center; }
+  .pl-label { font-size: 12px; color: #94a3b8; }
+  .pl-label.bold { font-size: 13px; color: #e2e8f0; font-weight: 700; }
+  .pl-right { text-align: right; }
+  .pl-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
+  .pl-val.bold { font-size: 18px; font-weight: 700; }
+  .pl-margin { font-size: 11px; margin-top: 1px; }
+  .pl-divider { height: 1px; background: #1e293b; margin: 6px 0; }
+
+  /* ── Break-even ── */
+  .beven-card {
+    background: #0f172a; border-radius: 10px; padding: 14px 16px;
+    margin-bottom: 24px; border: 1px solid #1e293b;
+  }
+  .beven-title { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .beven-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .beven-item-label { font-size: 11px; color: #475569; margin-bottom: 2px; }
+  .beven-item-val { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 700; }
+
+  /* ── Chart ── */
+  .chart-wrap { }
+  .chart-canvas-wrap {
+    position: relative;
+    height: 180px;
+    width: 100%;
+  }
+  .chart-note { font-size: 11px; color: #334155; margin-top: 6px; text-align: center; }
+
+  /* ── Inputs base style ── */
+  input[type=number] {
+    -moz-appearance: textfield;
+    border: 1px solid #1e293b;
+  }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input:focus { border-color: #334155 !important; }
+
+  /* ── Party Card ── */
+  .party-card {
+    background: #0f172a; border-radius: 12px; padding: 24px;
+    border: 1px solid #f59e0b33; margin-top: 16px;
+  }
+  .party-card-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+  }
+  .party-card-title { font-size: 16px; font-weight: 700; }
+  .party-card-subtitle { font-size: 13px; color: #64748b; margin-top: 3px; }
+  .party-badge {
+    font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px; border: 1px solid #f59e0b55;
+    color: #fbbf24; white-space: nowrap;
+  }
+  .party-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+  .party-slider-wrap { margin-bottom: 18px; }
+  .party-slider-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .party-slider-label { font-size: 13px; font-weight: 600; color: #cbd5e1; }
+  .party-slider-val {
+    font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 600;
+    color: #f59e0b; background: #1e293b; border: 1px solid #f59e0b33;
+    border-radius: 6px; padding: 3px 10px; min-width: 48px; text-align: center;
+  }
+  .party-divider { height: 1px; background: #1e293b; margin: 4px 0 20px; grid-column: 1/-1; }
+  .party-summary {
+    grid-column: 1/-1; background: #020817; border-radius: 10px; padding: 16px 20px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    border: 1px solid #1e293b;
+  }
+  .party-tier-badge {
+    grid-column: 1/-1; display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: #94a3b8; padding-bottom: 10px;
+    border-bottom: 1px solid #1e293b; margin-bottom: 4px;
+  }
+  .party-tier-dot { width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; flex-shrink: 0; }
+  .party-sum-label { font-size: 11px; color: #475569; margin-bottom: 4px; }
+  .party-sum-val { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 700; }
+
+  @media (max-width: 900px) {
+    #layout { grid-template-columns: 1fr; }
+    #sidebar { border-left: none; border-top: 1px solid #1e293b; }
+    .cat-grid { grid-template-columns: 1fr; }
+    .kpi-strip { gap: 16px; }
+    .party-grid { grid-template-columns: 1fr; }
+    .party-summary { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="header-brand">
+    <div class="eyebrow"><span class="pulse-dot"></span> Operational Model</div>
+    <h1><span>The Duel</span> P&amp;B Club</h1>
+    <p>Monthly Profit &amp; Loss Model &nbsp;·&nbsp; All figures in USD</p>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi"><div class="kpi-label">Total Members</div><div class="kpi-val" id="kpi-members" style="color:#22d3ee">—</div></div>
+    <div class="kpi"><div class="kpi-label">Monthly Revenue</div><div class="kpi-val" id="kpi-revenue" style="color:#a78bfa">—</div></div>
+    <div class="kpi"><div class="kpi-label">Operating Costs</div><div class="kpi-val" id="kpi-costs" style="color:#f472b6">—</div></div>
+    <div class="kpi"><div class="kpi-label">Net Profit</div><div class="kpi-val" id="kpi-profit">—</div></div>
+  </div>
+</div>
+
+<!-- BANNER -->
+<div id="banner"><span id="banner-icon">✓</span><span id="banner-text"></span></div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+  <!-- MAIN -->
+  <div id="main">
+    <!-- Tabs -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="members">Memberships</button>
+      <button class="tab-btn" data-tab="costs">Operating Costs</button>
+      <button class="tab-btn" data-tab="ancillary">Ancillary Revenue</button>
+    </div>
+
+    <!-- MEMBERSHIPS TAB -->
+    <div class="tab-pane active" id="tab-members">
+      <div class="cat-grid" id="cat-grid"></div>
+      <div class="rev-table-card">
+        <div class="section-title">Membership Revenue Breakdown</div>
+        <div class="rev-grid" id="rev-grid"></div>
+      </div>
+    </div>
+
+    <!-- COSTS TAB -->
+    <div class="tab-pane" id="tab-costs">
+      <div class="costs-card">
+        <h3>Monthly Operating Costs</h3>
+        <p>Adjust each line item to match your actual expenses</p>
+        <div id="costs-rows"></div>
+        <div class="cost-total-row">
+          <span class="cost-total-label">Total Monthly Costs</span>
+          <span class="cost-total-val" id="costs-total">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANCILLARY TAB -->
+    <div class="tab-pane" id="tab-ancillary">
+      <div class="anc-card">
+        <h3>Ancillary Revenue Inputs</h3>
+        <p>Non-membership revenue streams per month</p>
+        <div class="anc-grid" id="anc-grid"></div>
+      </div>
+      <!-- Party reservation card built by JS -->
+      <div id="party-card"></div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-title">Monthly P&amp;L</div>
+    <div class="pl-list" id="pl-list"></div>
+
+    <div class="beven-card">
+      <div class="beven-title">Break-Even Analysis</div>
+      <div class="beven-grid">
+        <div>
+          <div class="beven-item-label">Revenue/Member (avg)</div>
+          <div class="beven-item-val" id="be-rpu" style="color:#22d3ee">—</div>
+        </div>
+        <div>
+          <div class="beven-item-label">Members to Break Even</div>
+          <div class="beven-item-val" id="be-count" style="color:#fbbf24">—</div>
+        </div>
+        <div>
+          <div class="beven-item-label">Annual Projection</div>
+          <div class="beven-item-val" id="be-annual">—</div>
+        </div>
+        <div>
+          <div class="beven-item-label">Cost/Member</div>
+          <div class="beven-item-val" id="be-cpm" style="color:#f472b6">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="sidebar-title" style="margin-bottom:12px">Seasonalized Monthly Profit</div>
+      <div class="chart-canvas-wrap">
+        <canvas id="seasonChart"></canvas>
+      </div>
+      <p class="chart-note">Applies ±15% seasonal variation based on typical club patterns</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const TIERS = [
+  { id:"pb_duel",      label:"The Duel Pickleball",      monthly:74.99,  cat:"pickleball", color:"#22d3ee" },
+  { id:"pb_couple",    label:"Pickleball Couple",         monthly:110.99, cat:"pickleball", color:"#38bdf8" },
+  { id:"combo_duel",   label:"Duel Combo (PB+BM)",        monthly:94.99,  cat:"combo",      color:"#a78bfa" },
+  { id:"combo_couple", label:"Couple Combo (PB+BM)",      monthly:129.99, cat:"combo",      color:"#818cf8" },
+  { id:"combo_family", label:"Family Combo (PB+BM)",      monthly:147.99, cat:"combo",      color:"#6366f1" },
+  { id:"sr_pb",        label:"Senior Pickleball",         monthly:64.99,  cat:"pickleball", color:"#34d399" },
+  { id:"sr_combo",     label:"Senior Combo (PB+BM)",      monthly:84.99,  cat:"combo",      color:"#10b981" },
+  { id:"pb_group",     label:"Group of 8+ (per person)",  monthly:59.99,  cat:"pickleball", color:"#fbbf24" },
+  { id:"bm_platinum",  label:"Badminton Platinum",        monthly:59.99,  cat:"badminton",  color:"#f472b6" },
+  { id:"bm_sr",        label:"Senior Badminton Platinum", monthly:49.99,  cat:"badminton",  color:"#fb7185" },
+];
+const CAT_COLORS = { pickleball:"#38bdf8", combo:"#818cf8", badminton:"#f472b6" };
+const COSTS = [
+  { id:"rent",        label:"Facility Rent",           value:15000 },
+  { id:"staff",       label:"Staff & Coaching",         value:12000 },
+  { id:"utilities",   label:"Utilities",               value:2500  },
+  { id:"maintenance", label:"Equipment & Maintenance", value:1500  },
+  { id:"marketing",   label:"Marketing",               value:1200  },
+  { id:"insurance",   label:"Insurance",               value:1000  },
+  { id:"admin",       label:"Admin & Misc",            value:800   },
+];
+const ANCILLARY = [
+  { id:"openPlay",        label:"Non-Member Open Play Sessions/mo", value:300,  rate:7    },
+  { id:"studentOpenPlay", label:"Student Open Play Sessions/mo",    value:50,   rate:5    },
+  { id:"courtRental",     label:"Non-Member Court Rental hrs/mo",   value:80,   rate:20   },
+  { id:"ballMachine",     label:"Ball Machine Rental hrs/mo",       value:40,   rate:17.5 },
+  { id:"proShop",         label:"Pro Shop Revenue/mo (flat)",       value:1500, rate:1    },
+  { id:"paddleRental",    label:"Paddle Rentals (BM) /mo",          value:100,  rate:4    },
+];
+const SEASON = [0.75,0.8,0.9,1.0,1.05,1.1,1.05,1.0,1.05,1.0,0.9,0.8];
+const MONTHS  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const state = {
+  counts: Object.fromEntries(TIERS.map(t => [t.id, 30])),
+  costs:  Object.fromEntries(COSTS.map(c => [c.id, c.value])),
+  anc:    Object.fromEntries(ANCILLARY.map(a => [a.id, a.value])),
+  party: { headCount: 15, courts: 2, duration: 2, eventsPerMonth: 4 },
+};
+
+// ── PARTY PRICING ─────────────────────────────────────────────────────────────
+// From The Duel pricing sheet:
+//   ≤10 ppl  → $100/court flat per 2hr block
+//   11–19    → $100/hr facility + $10/person open play
+//   20+      → $150/hr facility + $10/person open play
+function calcPartyRevenue() {
+  const { headCount, courts, duration, eventsPerMonth } = state.party;
+  let facilityFee;
+  if (headCount <= 10) {
+    // Flat block rate: $100/court per 2hr block
+    facilityFee = courts * 100 * Math.ceil(duration / 2);
+  } else if (headCount < 20) {
+    facilityFee = courts * 100 * duration;
+  } else {
+    facilityFee = courts * 150 * duration;
+  }
+  const playerFee = headCount * 10;
+  const perEvent  = facilityFee + playerFee;
+  return { facilityFee, playerFee, perEvent, monthly: perEvent * eventsPerMonth };
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+const fmt = n => n.toLocaleString("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
+const fmtDec = n => n.toLocaleString("en-US",{style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2});
+
+// ── METRICS ───────────────────────────────────────────────────────────────────
+function calcMetrics() {
+  const memRev = TIERS.reduce((s,t) => s + t.monthly * state.counts[t.id], 0);
+  const ancRev = ANCILLARY.reduce((s,a) => s + state.anc[a.id] * a.rate, 0) + calcPartyRevenue().monthly;
+  const totalRev = memRev + ancRev;
+  const totalCost = COSTS.reduce((s,c) => s + state.costs[c.id], 0);
+  const profit = totalRev - totalCost;
+  const margin = totalRev > 0 ? profit / totalRev * 100 : 0;
+  const totalMem = TIERS.reduce((s,t) => s + state.counts[t.id], 0);
+  const byCat = ["pickleball","combo","badminton"].map(cat => ({
+    cat,
+    rev: TIERS.filter(t=>t.cat===cat).reduce((s,t)=>s+t.monthly*state.counts[t.id],0),
+    mem: TIERS.filter(t=>t.cat===cat).reduce((s,t)=>s+state.counts[t.id],0),
+  }));
+  return { memRev, ancRev, totalRev, totalCost, profit, margin, totalMem, byCat };
+}
+
+// ── BUILD DOM ─────────────────────────────────────────────────────────────────
+function buildCatGrid() {
+  const grid = document.getElementById("cat-grid");
+  ["pickleball","combo","badminton"].forEach(cat => {
+    const tiers = TIERS.filter(t => t.cat === cat);
+    const col = CAT_COLORS[cat];
+    const card = document.createElement("div");
+    card.className = "cat-card";
+    card.style.border = `1px solid ${col}22`;
+    card.innerHTML = `
+      <div class="cat-header">
+        <div>
+          <div class="cat-eyebrow" style="color:${col}">${cat}</div>
+          <div class="cat-sub" id="cat-sub-${cat}">— members</div>
+        </div>
+        <div>
+          <div class="cat-rev" id="cat-rev-${cat}" style="color:${col}">—</div>
+          <div class="cat-rev-label">monthly revenue</div>
+        </div>
+      </div>
+      <div id="sliders-${cat}"></div>`;
+    grid.appendChild(card);
+    const sliderWrap = card.querySelector(`#sliders-${cat}`);
+    tiers.forEach(t => sliderWrap.appendChild(buildSlider(t)));
+  });
+}
+
+function buildSlider(tier) {
+  const wrap = document.createElement("div");
+  wrap.className = "slider-wrap";
+  wrap.innerHTML = `
+    <div class="slider-row">
+      <span class="slider-label">${tier.label}</span>
+      <div class="slider-right">
+        <span class="slider-sublabel">$${tier.monthly}/mo</span>
+        <input type="number" class="slider-num" id="num-${tier.id}" min="0" max="500"
+          style="border-color:${tier.color}44; color:${tier.color}" value="${state.counts[tier.id]}" />
+      </div>
+    </div>
+    <input type="range" min="0" max="150" id="range-${tier.id}" value="${state.counts[tier.id]}"
+      style="accent-color:${tier.color}" />`;
+  const rangeEl = wrap.querySelector(`#range-${tier.id}`);
+  const numEl   = wrap.querySelector(`#num-${tier.id}`);
+  rangeEl.addEventListener("input", () => {
+    const v = parseInt(rangeEl.value);
+    state.counts[tier.id] = v;
+    numEl.value = v;
+    update();
+  });
+  numEl.addEventListener("input", () => {
+    const v = Math.max(0, parseInt(numEl.value) || 0);
+    state.counts[tier.id] = v;
+    rangeEl.value = Math.min(v, 150);
+    update();
+  });
+  return wrap;
+}
+
+function buildRevGrid() {
+  const grid = document.getElementById("rev-grid");
+  // headers
+  ["Tier","Rate","Members","Revenue"].forEach((h,i) => {
+    const el = document.createElement("div");
+    el.className = "rev-th";
+    if (i > 0) el.style.textAlign = "right";
+    el.textContent = h;
+    grid.appendChild(el);
+  });
+  // rows
+  TIERS.forEach(t => {
+    const name = document.createElement("div");
+    name.className = "rev-td rev-td-name";
+    name.innerHTML = `<span class="dot" style="background:${t.color}"></span>${t.label}`;
+    const rate = document.createElement("div");
+    rate.className = "rev-td-num";
+    rate.textContent = fmtDec(t.monthly);
+    const cnt = document.createElement("div");
+    cnt.className = "rev-td-cnt";
+    cnt.id = `rcnt-${t.id}`;
+    cnt.textContent = state.counts[t.id];
+    const val = document.createElement("div");
+    val.className = "rev-td-num";
+    val.id = `rval-${t.id}`;
+    val.style.color = t.color;
+    val.style.fontWeight = "600";
+    grid.append(name, rate, cnt, val);
+  });
+  // total row
+  const tl = document.createElement("div"); tl.className = "rev-total-label"; tl.textContent = "Total Membership";
+  const ts = document.createElement("div");
+  const tc = document.createElement("div"); tc.className = "rev-total-val"; tc.id = "rtotal-cnt"; tc.style.color = "#22d3ee";
+  const tv = document.createElement("div"); tc.textContent = "—";
+  tv.className = "rev-total-val"; tv.id = "rtotal-val"; tv.style.color = "#22d3ee";
+  grid.append(tl, ts, tc, tv);
+}
+
+function buildCosts() {
+  const wrap = document.getElementById("costs-rows");
+  COSTS.forEach(c => {
+    const row = document.createElement("div");
+    row.className = "cost-row";
+    row.innerHTML = `
+      <span class="cost-label">${c.label}</span>
+      <div class="cost-input-wrap">
+        <span class="cost-dollar">$</span>
+        <input type="number" class="cost-num" id="cost-${c.id}" value="${c.value}" min="0" />
+      </div>`;
+    wrap.appendChild(row);
+    row.querySelector(`#cost-${c.id}`).addEventListener("input", e => {
+      state.costs[c.id] = Math.max(0, parseInt(e.target.value) || 0);
+      update();
+    });
+  });
+}
+
+function buildAncillary() {
+  const grid = document.getElementById("anc-grid");
+  ["Stream","Rate","Revenue"].forEach((h,i) => {
+    const el = document.createElement("div");
+    el.className = "anc-th";
+    if (i > 0) el.style.textAlign = "right";
+    el.textContent = h;
+    grid.appendChild(el);
+  });
+  ANCILLARY.forEach(a => {
+    const lbl = document.createElement("div");
+    lbl.className = "anc-td-label";
+    lbl.innerHTML = `<span>${a.label}</span><input type="number" id="anc-${a.id}" value="${a.value}" min="0" />`;
+    const rate = document.createElement("div");
+    rate.className = "anc-td-rate";
+    rate.textContent = a.id === "proShop" ? `$${a.rate}/mo` : `$${a.rate}/unit`;
+    const val = document.createElement("div");
+    val.className = "anc-td-val";
+    val.id = `ancval-${a.id}`;
+    grid.append(lbl, rate, val);
+    lbl.querySelector(`#anc-${a.id}`).addEventListener("input", e => {
+      state.anc[a.id] = Math.max(0, parseInt(e.target.value) || 0);
+      update();
+    });
+  });
+  // total row
+  const tl = document.createElement("div");
+  tl.style.cssText = "grid-column:1; font-size:13px; font-weight:700; color:#e2e8f0; padding:10px 0 4px;";
+  tl.textContent = "Total Ancillary";
+  const ts = document.createElement("div");
+  const tv = document.createElement("div");
+  tv.className = "anc-total-val";
+  tv.id = "anctotal";
+  tv.style.padding = "10px 0 4px";
+  grid.append(tl, ts, tv);
+}
+
+function buildPartyCard() {
+  const wrap = document.getElementById("party-card");
+  wrap.innerHTML = `
+    <div class="party-card">
+      <div class="party-card-header">
+        <div>
+          <div class="party-card-title">🎉 Party Reservation</div>
+          <div class="party-card-subtitle">Tiered pricing based on head count · Deposit: $100 non-refundable</div>
+        </div>
+        <div class="party-badge" id="party-tier-label">—</div>
+      </div>
+
+      <div class="party-grid">
+        <!-- Head Count -->
+        <div class="party-slider-wrap">
+          <div class="party-slider-row">
+            <span class="party-slider-label">👥 Head Count (per event)</span>
+            <span class="party-slider-val" id="pv-headCount">15</span>
+          </div>
+          <input type="range" min="1" max="100" value="15" id="pr-headCount" style="accent-color:#f59e0b" />
+        </div>
+
+        <!-- Courts -->
+        <div class="party-slider-wrap">
+          <div class="party-slider-row">
+            <span class="party-slider-label">🏟 Courts Booked</span>
+            <span class="party-slider-val" id="pv-courts">2</span>
+          </div>
+          <input type="range" min="1" max="6" value="2" id="pr-courts" style="accent-color:#f59e0b" />
+        </div>
+
+        <!-- Duration -->
+        <div class="party-slider-wrap">
+          <div class="party-slider-row">
+            <span class="party-slider-label">⏱ Duration (hours)</span>
+            <span class="party-slider-val" id="pv-duration">2 hrs</span>
+          </div>
+          <input type="range" min="1" max="6" value="2" id="pr-duration" style="accent-color:#f59e0b" />
+        </div>
+
+        <!-- Events per month -->
+        <div class="party-slider-wrap">
+          <div class="party-slider-row">
+            <span class="party-slider-label">📅 Events / Month</span>
+            <span class="party-slider-val" id="pv-eventsPerMonth">4</span>
+          </div>
+          <input type="range" min="0" max="30" value="4" id="pr-eventsPerMonth" style="accent-color:#f59e0b" />
+        </div>
+
+        <div class="party-divider"></div>
+
+        <!-- Summary -->
+        <div class="party-summary">
+          <div class="party-tier-badge">
+            <span class="party-tier-dot"></span>
+            <span id="party-pricing-note">—</span>
+          </div>
+          <div>
+            <div class="party-sum-label">Facility Fee / Event</div>
+            <div class="party-sum-val" id="ps-facility" style="color:#f59e0b">—</div>
+          </div>
+          <div>
+            <div class="party-sum-label">Player Fee / Event ($10 × guests)</div>
+            <div class="party-sum-val" id="ps-player" style="color:#fbbf24">—</div>
+          </div>
+          <div>
+            <div class="party-sum-label">Total / Event</div>
+            <div class="party-sum-val" id="ps-perEvent" style="color:#e2e8f0">—</div>
+          </div>
+          <div>
+            <div class="party-sum-label">Monthly Revenue</div>
+            <div class="party-sum-val" id="ps-monthly" style="color:#34d399">—</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // Wire up all sliders
+  ["headCount","courts","duration","eventsPerMonth"].forEach(key => {
+    const range = document.getElementById(`pr-${key}`);
+    range.addEventListener("input", () => {
+      state.party[key] = parseInt(range.value);
+      update();
+    });
+  });
+}
+
+function buildPLList() {
+  const list = document.getElementById("pl-list");
+  list.innerHTML = "";
+  // rows defined dynamically in update()
+}
+
+// ── CHART ─────────────────────────────────────────────────────────────────────
+let chart;
+function buildChart() {
+  const ctx = document.getElementById("seasonChart").getContext("2d");
+  chart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: MONTHS,
+      datasets: [{
+        data: new Array(12).fill(0),
+        backgroundColor: new Array(12).fill("#34d399"),
+        borderRadius: 3,
+        barPercentage: 0.7,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: "#0f172a",
+        borderColor: "#334155",
+        borderWidth: 1,
+        titleColor: "#94a3b8",
+        bodyColor: "#e2e8f0",
+        callbacks: {
+          label: ctx => fmt(ctx.parsed.y),
+        }
+      }},
+      scales: {
+        x: { grid: { display: false }, ticks: { color: "#475569", font: { size: 11 } }, border: { display: false } },
+        y: {
+          grid: { color: "#1e293b" },
+          ticks: { color: "#475569", font: { size: 10 }, callback: v => `$${(v/1000).toFixed(0)}k` },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+
+// ── UPDATE ────────────────────────────────────────────────────────────────────
+function update() {
+  const m = calcMetrics();
+  const isProfit = m.profit >= 0;
+
+  // Header KPIs
+  document.getElementById("kpi-members").textContent = m.totalMem.toLocaleString();
+  document.getElementById("kpi-revenue").textContent = fmt(m.totalRev);
+  document.getElementById("kpi-costs").textContent   = fmt(m.totalCost);
+  const kpiProfit = document.getElementById("kpi-profit");
+  kpiProfit.textContent = fmt(m.profit);
+  kpiProfit.style.color = isProfit ? "#34d399" : "#f87171";
+
+  // Banner
+  const banner = document.getElementById("banner");
+  const bannerText = document.getElementById("banner-text");
+  const bannerIcon = document.getElementById("banner-icon");
+  if (isProfit) {
+    banner.style.background = "linear-gradient(90deg, #052e16 0%, #14532d 100%)";
+    banner.style.borderColor = "#166534";
+    bannerText.style.color = "#4ade80";
+    bannerIcon.textContent = "✓";
+    bannerText.textContent = `Operating at ${m.margin.toFixed(1)}% margin · ${fmt(m.profit)} monthly profit`;
+  } else {
+    banner.style.background = "linear-gradient(90deg, #2d0a0a 0%, #450a0a 100%)";
+    banner.style.borderColor = "#7f1d1d";
+    bannerText.style.color = "#f87171";
+    bannerIcon.textContent = "⚠";
+    const needed = m.totalMem > 0 ? Math.ceil(Math.abs(m.profit) / (m.memRev / m.totalMem)) : "?";
+    bannerText.textContent = `Operating at a loss of ${fmt(Math.abs(m.profit))} · Needs ~${needed} more avg members to break even`;
+  }
+
+  // Category cards
+  m.byCat.forEach(b => {
+    const sub = document.getElementById(`cat-sub-${b.cat}`);
+    const rev = document.getElementById(`cat-rev-${b.cat}`);
+    if (sub) sub.textContent = `${b.mem} members`;
+    if (rev) rev.textContent = fmt(b.rev);
+  });
+
+  // Sliders (update count displays)
+  TIERS.forEach(t => {
+    const cnt = document.getElementById(`rcnt-${t.id}`);
+    const val = document.getElementById(`rval-${t.id}`);
+    if (cnt) cnt.textContent = state.counts[t.id];
+    if (val) val.textContent = fmt(t.monthly * state.counts[t.id]);
+    // keep range thumb synced if number input changed beyond slider max
+    const rangeEl = document.getElementById(`range-${t.id}`);
+    if (rangeEl) rangeEl.value = Math.min(state.counts[t.id], 150);
+    const numEl = document.getElementById(`num-${t.id}`);
+    if (numEl) numEl.value = state.counts[t.id];
+  });
+  const rtc = document.getElementById("rtotal-cnt");
+  const rtv = document.getElementById("rtotal-val");
+  if (rtc) rtc.textContent = m.totalMem;
+  if (rtv) rtv.textContent = fmt(m.memRev);
+
+  // Costs total
+  document.getElementById("costs-total").textContent = fmt(m.totalCost);
+
+  // Ancillary values
+  ANCILLARY.forEach(a => {
+    const el = document.getElementById(`ancval-${a.id}`);
+    if (el) el.textContent = fmt(state.anc[a.id] * a.rate);
+  });
+  document.getElementById("anctotal").textContent = fmt(m.ancRev);
+
+  // Party card
+  const p = calcPartyRevenue();
+  const hc = state.party.headCount;
+  let tierLabel, pricingNote;
+  if (hc <= 10) {
+    tierLabel = "≤10 ppl · Flat Block Rate";
+    pricingNote = `$100/court per 2hr block · ${state.party.courts} court${state.party.courts>1?"s":""} × ${Math.ceil(state.party.duration/2)} block${Math.ceil(state.party.duration/2)>1?"s":""}`;
+  } else if (hc < 20) {
+    tierLabel = "11–19 ppl · Standard Rate";
+    pricingNote = `$100/hr × ${state.party.duration}hr × ${state.party.courts} court${state.party.courts>1?"s":""}`;
+  } else {
+    tierLabel = "20+ ppl · Peak Rate";
+    pricingNote = `$150/hr × ${state.party.duration}hr × ${state.party.courts} court${state.party.courts>1?"s":""}`;
+  }
+  const tierEl = document.getElementById("party-tier-label");
+  const noteEl = document.getElementById("party-pricing-note");
+  if (tierEl) tierEl.textContent = tierLabel;
+  if (noteEl) noteEl.textContent = `Pricing: ${pricingNote} + $10/person open play`;
+
+  const setP = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  setP("pv-headCount",     hc);
+  setP("pv-courts",        state.party.courts);
+  setP("pv-duration",      state.party.duration + " hrs");
+  setP("pv-eventsPerMonth",state.party.eventsPerMonth);
+  setP("ps-facility",      fmt(p.facilityFee));
+  setP("ps-player",        fmt(p.playerFee));
+  setP("ps-perEvent",      fmt(p.perEvent));
+  setP("ps-monthly",       fmt(p.monthly));
+
+  // Sync range sliders to current state (e.g. on init)
+  ["headCount","courts","duration","eventsPerMonth"].forEach(k => {
+    const r = document.getElementById(`pr-${k}`);
+    if (r) r.value = state.party[k];
+  });
+
+  // P&L sidebar
+  const pl = document.getElementById("pl-list");
+  pl.innerHTML = "";
+  const rows = [
+    { label:"Membership Revenue", val:m.memRev,    color:"#22d3ee", bold:false },
+    { label:"Ancillary Revenue",  val:m.ancRev,    color:"#818cf8", bold:false },
+    null,
+    { label:"Total Revenue",      val:m.totalRev,  color:"#e2e8f0", bold:true  },
+    null,
+    { label:"Operating Costs",    val:-m.totalCost, color:"#f87171", bold:false },
+    null,
+    { label:"Operating Profit",   val:m.profit,    color:isProfit?"#34d399":"#f87171", bold:true, large:true, margin:m.margin },
+  ];
+  rows.forEach(row => {
+    if (!row) { const d = document.createElement("div"); d.className = "pl-divider"; pl.appendChild(d); return; }
+    const barPct = m.totalRev > 0 ? Math.min(100, Math.abs(row.val) / m.totalRev * 100) : 0;
+    const el = document.createElement("div");
+    el.className = "pl-row" + (row.bold ? " bold" : "");
+    if (!row.bold) el.innerHTML = `<div class="pl-bar" style="width:${barPct}%;background:${row.color}11"></div>`;
+    const displayed = row.val < 0 ? `(${fmt(Math.abs(row.val))})` : fmt(row.val);
+    el.innerHTML += `
+      <div class="pl-inner">
+        <span class="pl-label${row.bold?" bold":""}">${row.label}</span>
+        <div class="pl-right">
+          <div class="pl-val${row.bold?" bold":""}" style="color:${row.color}">${displayed}</div>
+          ${row.margin != null ? `<div class="pl-margin" style="color:${isProfit?"#4ade80":"#f87171"}">${m.margin.toFixed(1)}% margin</div>` : ""}
+        </div>
+      </div>`;
+    pl.appendChild(el);
+  });
+
+  // Break-even
+  const rpu  = m.totalMem > 0 ? fmt(m.memRev / m.totalMem) : "$—";
+  const be   = m.totalMem > 0 ? Math.ceil(m.totalCost / (m.memRev / m.totalMem)).toLocaleString() : "—";
+  const cpm  = m.totalMem > 0 ? fmt(m.totalCost / m.totalMem) : "—";
+  document.getElementById("be-rpu").textContent    = rpu;
+  document.getElementById("be-count").textContent  = be;
+  const annualEl = document.getElementById("be-annual");
+  annualEl.textContent  = fmt(m.profit * 12);
+  annualEl.style.color  = isProfit ? "#34d399" : "#f87171";
+  document.getElementById("be-cpm").textContent    = cpm;
+
+  // Chart
+  const profits = SEASON.map(s => Math.round(m.totalRev * s - m.totalCost));
+  chart.data.datasets[0].data = profits;
+  chart.data.datasets[0].backgroundColor = profits.map(p => p >= 0 ? "#34d399" : "#f87171");
+  chart.update("none");
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+  });
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+buildCatGrid();
+buildRevGrid();
+buildCosts();
+buildAncillary();
+buildPartyCard();
+buildChart();
+update();
+</script>
+</body>
+</html>
